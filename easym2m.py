@@ -92,7 +92,7 @@ def fetch_balance(username, password):
         res = s.get('https://www.easym2m.eu/inside_new/simcards/details_simcard/' + sim_card['iccid'])
         soup_mysite = BeautifulSoup(res.text, "html.parser")
         balance_str = soup_mysite.find("b", text='Balance: ').parent.text.replace('Balance: ', '').strip(' €\r\n')
-        sim_card['balance'] = float(balance_str) if balance_str != '---' else -1
+        sim_card['balance'] = float(balance_str) if balance_str != '---' else -1.0
 
         sim_card['usage_data'] = float(sim_card['usage_data'])
         sim_card['usage_voice'] = float(sim_card['usage_voice'])
