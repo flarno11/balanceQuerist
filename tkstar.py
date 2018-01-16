@@ -34,11 +34,15 @@ def fetch_info(username, password, user_id, device_id):
     if res.status_code != 200:
         raise LoginException()
 
-    res = s.post('http://mytkstar.net/Ajax/DevicesAjax.asmx/GetDevicesByUserID',
+    def post():
+        return s.post('http://mytkstar.net/Ajax/DevicesAjax.asmx/GetDevicesByUserID',
                  json={'UserID': user_id,'isFirst':False,'TimeZones':'2:00','DeviceID':device_id},
                  headers={'Accept': 'application/json'})
 
+    res = post()
     if res.status_code != 200:
+        print(res.status_code)
+        print(res.headers)
         raise DownloadException()
 
     encoded_json_str = res.json()['d']
@@ -47,6 +51,8 @@ def fetch_info(username, password, user_id, device_id):
         print(res.headers)
         for line in res.iter_lines():
             print(line)
+        res = post()
+        encoded_json_str = res.json()['d']
 
     try:
         result = json.loads(fix_lazy_json(encoded_json_str))
