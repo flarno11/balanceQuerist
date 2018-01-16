@@ -44,7 +44,9 @@ def fetch_info(username, password, user_id, device_id):
     encoded_json_str = res.json()['d']
     print(encoded_json_str)
     if not encoded_json_str:
-        print(res.raw)
+        print(res.headers)
+        for line in res.iter_lines():
+            print(line)
 
     try:
         result = json.loads(fix_lazy_json(encoded_json_str))
