@@ -22,6 +22,13 @@ class JSONEncoder(json.JSONEncoder):
 app.json_encoder = JSONEncoder
 
 
+@app.errorhandler(500)
+def handle_internal_server_error(e):
+    response = jsonify({'message': str(e)})
+    response.status_code = 500
+    return response
+
+
 def fetch_tkstar():
     return tkstar.fetch_info(
         username=os.environ['TKSTAR_USERNAME'],
