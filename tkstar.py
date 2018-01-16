@@ -10,15 +10,18 @@ from lib import fix_lazy_json
 
 
 class BalanceException(Exception):
-    pass
+    def __str__(self):
+        return 'BalanceException'
 
 
 class LoginException(BalanceException):
-    pass
+    def __str__(self):
+        return 'LoginException'
 
 
 class DownloadException(BalanceException):
-    pass
+    def __str__(self):
+        return 'DownloadException'
 
 
 def fetch_info(username, password, user_id, device_id):
@@ -32,6 +35,10 @@ def fetch_info(username, password, user_id, device_id):
     input_fields['txtImeiPassword'] = password
     res = s.post('http://mytkstar.net/Login.aspx', data=input_fields, allow_redirects=False)
     if res.status_code != 200:
+        print(res.status_code)
+        print(res.headers)
+        for line in res.iter_lines():
+            print(line)
         raise LoginException()
 
     def post():
@@ -46,7 +53,7 @@ def fetch_info(username, password, user_id, device_id):
         raise DownloadException()
 
     encoded_json_str = res.json()['d']
-    print(encoded_json_str)
+    print('encoded_json_str=' + encoded_json_str)
     if not encoded_json_str:
         print(res.headers)
         for line in res.iter_lines():
