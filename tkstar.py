@@ -42,11 +42,11 @@ def fetch_info(username, password, user_id, device_id):
         raise DownloadException()
 
     encoded_json_str = res.json()['d']
+    print(encoded_json_str)
 
     try:
         result = json.loads(fix_lazy_json(encoded_json_str))
     except JSONDecodeError:
-        print(encoded_json_str)
         raise DownloadException()
 
     if len(result['devices']) != 1:
