@@ -7,6 +7,9 @@ import datetime
 from bs4 import BeautifulSoup
 
 from lib import fix_lazy_json
+import logging
+
+log = logging.getLogger('werkzeug')
 
 
 class BalanceException(Exception):
@@ -26,6 +29,7 @@ class DownloadException(BalanceException):
 
 def fetch_info(username, password, user_id, device_id):
     s = requests.Session()
+    log.info(s.cookies)
     s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:58.0) Gecko/20100101 Firefox/58.0';
 
     res = s.get('http://mytkstar.net/Login.aspx')
@@ -34,11 +38,11 @@ def fetch_info(username, password, user_id, device_id):
     input_fields['txtImeiNo'] = username
     input_fields['txtImeiPassword'] = password
     res = s.post('http://mytkstar.net/Login.aspx', data=input_fields, allow_redirects=False)
+    log.info('login POST request headers: ' + str(res.request.headers))
+    log.info('login POST response headers: ' + str(res.headers))
     if res.status_code != 200 or '.ASPXAUTH' not in s.cookies:
-        print(res.status_code)
-        print(res.headers)
-        for line in res.iter_lines():
-            print(line)
+        log.info('login response status_code=' + str(res.status_code))
+        log.info('session cookies=' + str(s.cookies))
         raise LoginException()
 
     def post():
@@ -48,12 +52,12 @@ def fetch_info(username, password, user_id, device_id):
 
     res = post()
     if res.status_code != 200:
-        print(res.status_code)
-        print(res.headers)
+        log.info(res.status_code)
+        log.info(res.headers)
         raise DownloadException()
 
     encoded_json_str = res.json()['d']
-    print('encoded_json_str=' + encoded_json_str)
+    log.info('encoded_json_str=' + encoded_json_str)
     if not encoded_json_str:
         raise DownloadException()
 
