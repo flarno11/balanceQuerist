@@ -26,7 +26,7 @@ class DownloadException(BalanceException):
 
 def fetch_info(username, password, user_id, device_id):
     s = requests.Session()
-    s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:54.0) Gecko/20100101 Firefox/54.0';
+    s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:58.0) Gecko/20100101 Firefox/58.0';
 
     res = s.get('http://mytkstar.net/Login.aspx')
     soup_mysite = BeautifulSoup(res.text, "html.parser")
@@ -34,7 +34,7 @@ def fetch_info(username, password, user_id, device_id):
     input_fields['txtImeiNo'] = username
     input_fields['txtImeiPassword'] = password
     res = s.post('http://mytkstar.net/Login.aspx', data=input_fields, allow_redirects=False)
-    if res.status_code != 200:
+    if res.status_code != 200 or '.ASPXAUTH' not in s.cookies:
         print(res.status_code)
         print(res.headers)
         for line in res.iter_lines():
@@ -55,11 +55,7 @@ def fetch_info(username, password, user_id, device_id):
     encoded_json_str = res.json()['d']
     print('encoded_json_str=' + encoded_json_str)
     if not encoded_json_str:
-        print(res.headers)
-        for line in res.iter_lines():
-            print(line)
-        res = post()
-        encoded_json_str = res.json()['d']
+        raise DownloadException()
 
     try:
         result = json.loads(fix_lazy_json(encoded_json_str))
