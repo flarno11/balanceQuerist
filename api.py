@@ -53,8 +53,9 @@ def metrics():
     data = easym2m.fetch_balance(os.environ['EASYM2M_USERNAME'], os.environ['EASYM2M_PASSWORD'])
     results = ['total_balance ' + str(data['total_balance'])]
     for sim_card_data in data['sim_cards']:
-        results.append('balance{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['balance']))
-        results.append('usage_data{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['usage_data']))
+        if sim_card_data['status'] != 'DEACTIVATED':
+            results.append('balance{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['balance']))
+            results.append('usage_data{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['usage_data']))
 
     device = fetch_tkstar()
     device_id = str(device['id'])
