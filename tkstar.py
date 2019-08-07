@@ -47,7 +47,7 @@ def fetch_info(username, password, user_id, device_id):
 
     def post():
         return s.post('http://mytkstar.net/Ajax/DevicesAjax.asmx/GetDevicesByUserID',
-                 json={'UserID': user_id,'isFirst':False,'TimeZones':'2:00','DeviceID':device_id},
+                 json={'UserID': user_id,'isFirst':False,'TimeZones':'2:00','DeviceID':device_id,'IsKM':1},
                  headers={'Accept': 'application/json'})
 
     res = post()
