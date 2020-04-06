@@ -40,7 +40,7 @@ def fetch_tkstar():
 
 @app.route('/simCards')
 def sim_card_info():
-    return jsonify(easym2m.fetch_balance(os.environ['EASYM2M_USERNAME'], os.environ['EASYM2M_PASSWORD']))
+    return jsonify(easym2m.fetch_balance(os.environ['EASYM2M_USERNAME'], os.environ['EASYM2M_PASSWORD'], os.environ['EASYM2M_APIKEY']))
 
 
 @app.route('/tkStar')
@@ -50,12 +50,14 @@ def tkstar_info():
 
 @app.route('/metrics')
 def metrics():
-    data = easym2m.fetch_balance(os.environ['EASYM2M_USERNAME'], os.environ['EASYM2M_PASSWORD'])
-    results = ['total_balance ' + str(data['total_balance'])]
+    results = []
+
+    data = easym2m.fetch_balance(os.environ['EASYM2M_USERNAME'], os.environ['EASYM2M_PASSWORD'], os.environ['EASYM2M_APIKEY'])
+    results.append('total_balance ' + str(data['total_balance']))
     for sim_card_data in data['sim_cards']:
         if sim_card_data['status'] != 'DEACTIVATED':
             results.append('balance{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['balance']))
-            results.append('usage_data{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['usage_data']))
+            results.append('usage_data{iccid="' + sim_card_data['iccid'] + '"} ' + str(sim_card_data['consumptionMonthlyDataValue']))
 
     device = fetch_tkstar()
     device_id = str(device['id'])
