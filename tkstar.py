@@ -27,51 +27,23 @@ class DownloadException(BalanceException):
         return 'DownloadException'
 
 
-def fetch_info(username, password, user_id, device_id):
-    s = requests.Session()
-    log.info(s.cookies)
-    s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:58.0) Gecko/20100101 Firefox/58.0';
+def fetch_info(device_id, key):
+    res = requests.post('https://www.mytkstar.net:8089/openapiv3.asmx/GetTracking', data={
+        'DeviceID': device_id,
+        'Key': key,
+        'MapType': 'Google',
+        'TimeZones': '2:00',
+        'Model': '0',
+        'Language': 'en_US'
+    }, headers={
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 7.1.1; Pixel Build/NMF26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.91 Mobile Safari/537.36'
+    })
 
-    res = s.get('http://mytkstar.net/Login.aspx')
-    soup_mysite = BeautifulSoup(res.text, "html.parser")
-    input_fields = {input.get('name'): input.get('value') for input in soup_mysite.find_all("input")}
-    input_fields['txtImeiNo'] = username
-    input_fields['txtImeiPassword'] = password
-    res = s.post('http://mytkstar.net/Login.aspx', data=input_fields, allow_redirects=False)
-    log.info('login POST request headers: ' + str(res.request.headers))
-    log.info('login POST response headers: ' + str(res.headers))
-    if res.status_code != 200 or '.ASPXAUTH' not in s.cookies:
-        log.info('login response status_code=' + str(res.status_code))
-        log.info('session cookies=' + str(s.cookies))
-        raise LoginException()
-
-    def post():
-        return s.post('http://mytkstar.net/Ajax/DevicesAjax.asmx/GetDevicesByUserID',
-                 json={'UserID': user_id,'isFirst':False,'TimeZones':'2:00','DeviceID':device_id,'IsKM':1},
-                 headers={'Accept': 'application/json'})
-
-    res = post()
     if res.status_code != 200:
-        log.info(res.status_code)
-        log.info(res.headers)
         raise DownloadException()
 
-    encoded_json_str = res.json()['d']
-    log.info('encoded_json_str=' + encoded_json_str)
-    if not encoded_json_str:
-        raise DownloadException()
-
-    try:
-        result = json.loads(fix_lazy_json(encoded_json_str))
-    except JSONDecodeError:
-        raise DownloadException()
-
-    if len(result['devices']) != 1:
-        raise DownloadException()
-
-    device = result['devices'][0]
-
-    device['deviceUtcDate'] = datetime.datetime.strptime(device['deviceUtcDate'],'%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
-    device['serverUtcDate'] = datetime.datetime.strptime(device['serverUtcDate'],'%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
-
-    return device
+    soup_mysite = BeautifulSoup(res.text, "html.parser")
+    result = json.loads(soup_mysite.find_all()[0].text)
+    result['id'] = device_id
+    result['positionTime'] = datetime.datetime.strptime(result['positionTime'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+    return result

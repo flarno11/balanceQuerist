@@ -31,10 +31,8 @@ def handle_internal_server_error(e):
 
 def fetch_tkstar():
     return tkstar.fetch_info(
-        username=os.environ['TKSTAR_USERNAME'],
-        password=os.environ['TKSTAR_PASSWORD'],
-        user_id=os.environ['TKSTAR_USERID'],
         device_id=os.environ['TKSTAR_DEVICEID'],
+        key=os.environ['TKSTAR_KEY'],
     )
 
 
@@ -61,8 +59,8 @@ def metrics():
 
     device = fetch_tkstar()
     device_id = str(device['id'])
-    results.append('updated_at{deviceId="' + device_id + '"} ' + str(device['deviceUtcDate'].timestamp()))
-    results.append('battery_level{deviceId="' + device_id + '"} ' + str(-float(device['dataContext'])))
+    results.append('updated_at{deviceId="' + device_id + '"} ' + str(device['positionTime'].timestamp()))
+    results.append('battery_level{deviceId="' + device_id + '"} ' + str(device['battery']))
 
     response = make_response("\n".join(results) + "\n")
     response.headers["content-type"] = "text/plain"
